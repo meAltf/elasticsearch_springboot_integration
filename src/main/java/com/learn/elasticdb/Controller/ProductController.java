@@ -20,16 +20,17 @@ public class ProductController {
      * }
      **/
 
-    @PostMapping
+    @PostMapping("/save")
     public ProductDocument saveProduct(@RequestBody ProductDocument product) {
         return productService.saveProduct(product);
     }
 
-    @GetMapping
+    @GetMapping("/get")
     public Iterable<ProductDocument> getAllProducts() {
         return productService.getAllProducts();
     }
 
+    @GetMapping("/{id}")
     public ProductDocument getProductById(@PathVariable String id) {
         return productService.getProductById(id);
     }
