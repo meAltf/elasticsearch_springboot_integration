@@ -1,0 +1,32 @@
+1. Disable auto index creation:
+spring.elasticsearch.index.auto-create: false
+
+2. Create index manually (ONE TIME):
+curl -X PUT http://localhost:9200/products \
+-H "Content-Type: application/json" \
+-d '{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  }
+}'
+
+3. Check:
+curl http://localhost:9200/_cat/indices?v
+
+4. Put data in elasticsearch
+curl -X POST http://localhost:8080/products \
+-H "Content-Type: application/json" \
+-d '{
+  "name": "MacBook Air M1",
+  "description": "Apple laptop",
+  "price": 99999
+}'
+
+5. Check data now | This proves Docker ES is actually storing data
+curl http://localhost:9200/products/_search?pretty
+
+6. After adding kibana check data visually
+http://localhost:5601 -> under management -> dev tools
+
+
