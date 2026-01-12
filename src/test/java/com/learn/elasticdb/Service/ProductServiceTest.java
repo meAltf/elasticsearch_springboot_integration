@@ -9,11 +9,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -86,5 +85,15 @@ public class ProductServiceTest {
         assertNotNull(resultProduct);
         assertEquals("abc123", product.getId());
         assertEquals("Iphone", product.getName());
+    }
+
+    @Test
+    void getProductById_whenNotFound_throwsException() {
+        when(productRepository.findById("12xy")).thenReturn(Optional.empty());
+
+        NoSuchElementException exception = assertThrows(
+                NoSuchElementException.class, () -> productService.getProductById("12xy"));
+
+        assertEquals("Product not found with id in index: 12xy", exception.getMessage());
     }
 }

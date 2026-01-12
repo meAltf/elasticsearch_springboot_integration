@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -31,7 +33,7 @@ public class ProductService {
 
     public ProductDocument getProductById(String id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id in index: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Product not found with id in index: " + id));
     }
 
     // To test is product repository is able to inject successfully or not
