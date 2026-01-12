@@ -9,5 +9,7 @@ import java.util.Optional;
 @Repository
 public interface ProductRepository extends ElasticsearchRepository<ProductDocument, String> {
 
+    ProductDocument save(ProductDocument product);
+
     Optional<ProductDocument> findById(String name);
 }

@@ -3,7 +3,6 @@ package com.learn.elasticdb.Service;
 import com.learn.elasticdb.Entity.ProductDocument;
 import com.learn.elasticdb.Repository.ProductRepository;
 import jakarta.annotation.PostConstruct;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +23,8 @@ public class ProductService {
      **/
 
     public ProductDocument saveProduct(ProductDocument product) {
-        return productRepository.save(product);
+        ProductDocument resultProduct = productRepository.save(product);
+        return resultProduct;
     }
 
     public Iterable<ProductDocument> getAllProducts() {
