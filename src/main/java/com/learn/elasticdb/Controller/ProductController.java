@@ -5,6 +5,8 @@ import com.learn.elasticdb.Service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
@@ -33,6 +35,11 @@ public class ProductController {
     @GetMapping("/{id}")
     public ProductDocument getProductById(@PathVariable String id) {
         return productService.getProductById(id);
+    }
+
+    @GetMapping("/search")
+    public List<ProductDocument> search(@RequestParam String query) {
+        return productService.searchProduct(query);
     }
 
     // To test, is springboot able to map the request or not

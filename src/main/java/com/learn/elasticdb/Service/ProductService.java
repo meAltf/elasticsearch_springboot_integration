@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -34,6 +35,10 @@ public class ProductService {
     public ProductDocument getProductById(String id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Product not found with id in index: " + id));
+    }
+
+    public List<ProductDocument> searchProduct(String query) {
+        return productRepository.findByNameContainingOrDescriptionContaining(query, query);
     }
 
     // To test is product repository is able to inject successfully or not

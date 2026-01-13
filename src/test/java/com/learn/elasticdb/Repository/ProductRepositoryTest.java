@@ -1,10 +1,12 @@
 package com.learn.elasticdb.Repository;
 
 import com.learn.elasticdb.Entity.ProductDocument;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,6 +20,12 @@ public class ProductRepositoryTest {
      ✔ Validates:
      Index mapping, Serialization, ES interaction, Repository wiring
      */
+
+    // Does not use this
+    @BeforeEach
+    void cleanIndex() {
+        productRepository.deleteAll();
+    }
 
     @Autowired
     private ProductRepository productRepository;
@@ -35,5 +43,59 @@ public class ProductRepositoryTest {
         assertTrue(result.isPresent());
         assertEquals("Macbook", result.get().getName());
         assertEquals(99000, result.get().getPrice());
+    }
+
+    @Test
+    void findByNameContainingOrDescriptionContaining_matchByName(){
+        ProductDocument product1 = new ProductDocument();
+        product1.setId("1");
+        product1.setName("Apple iPhone");
+        product1.setDescription("Smartphone");
+
+        ProductDocument product2 = new ProductDocument();
+        product2.setId("2");
+        product2.setName("Samsung TV");
+        product2.setDescription("Television");
+
+        productRepository.saveAll(List.of(product1, product2));
+
+        List<ProductDocument> productResult = productRepository.findByNameContainingOrDescriptionContaining(
+                "Apple", "Apple");
+
+        assertEquals(1, productResult.size());
+        assertEquals("Apple iPhone", productResult.get(0).getName());
+    }
+
+    @Test
+    void findByNameContainingOrDescriptionContaining_matchByDescription() {
+        ProductDocument product = new ProductDocument();
+        product.setId("1");
+        product.setName("Laptop");
+        product.setDescription("Gaming Laptop");
+
+        productRepository.saveAll(List.of(product));
+
+        List<ProductDocument> productResult = productRepository.findByNameContainingOrDescriptionContaining(
+                "Phone", "Gaming");
+
+        assertEquals(1, productResult.size());
+        assertEquals("Laptop", productResult.get(0).getName());
+    }
+
+    @Test
+    void findByNameContainingOrDescriptionContaining_noMatch() {
+        ProductDocument product = new ProductDocument();
+        product.setId("4");
+        product.setName("Tablet");
+        product.setDescription("Android device");
+
+        productRepository.save(product);
+
+        List<ProductDocument> result =
+                productRepository.findByNameContainingOrDescriptionContaining(
+                        "iPhone", "iPhone"
+                );
+
+        assertTrue(result.isEmpty());
     }
 }

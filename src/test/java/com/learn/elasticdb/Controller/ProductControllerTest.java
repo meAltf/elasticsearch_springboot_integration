@@ -90,6 +90,26 @@ public class ProductControllerTest {
     }
 
     @Test
+    void searchProduct_shouldReturnProducts() throws Exception {
+        ProductDocument product = new ProductDocument();
+        product.setName("product");
+        product.setDescription("Description");
+
+        when(productService.searchProduct("product")).thenReturn(List.of(product));
+        mockMvc.perform(get("/products/search")
+                        .param("query", "product"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].name").value("product"));
+    }
+
+    @Test
+    void search_missingNameParam_returns400() throws Exception {
+        mockMvc.perform(get("/products/search"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void test_shouldReturnString() throws Exception{
         mockMvc.perform(get("/products/test"))
                 .andExpect(status().isOk())

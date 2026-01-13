@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Data
 @NoArgsConstructor
@@ -14,9 +16,23 @@ public class ProductDocument {
 
     @Id
     private String id;
+
+    @Field(type = FieldType.Text)
     private String name;
+
+    @Field(type = FieldType.Text)
     private String description;
+
+    @Field(type = FieldType.Double)
     private double price;
+
+    /** FieldType
+     Text : Enables full-text search (tokenization, relevance scoring)
+     Double : Enables range queries & sorting
+     @Id : Maps to ES _id
+
+     - If we used "Keyword" instead of "Text", searching "mac" would NOT match "macbook".
+     */
 
     // After adding lombok- below code snippets not required
 
