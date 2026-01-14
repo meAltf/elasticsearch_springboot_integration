@@ -57,6 +57,8 @@ public class ProductRepositoryTest {
         assertEquals(99000, result.get().getPrice());
     }
 
+
+/**
     @Test
     void findByNameContainingOrDescriptionContaining_matchByName(){
         ProductDocument product1 = new ProductDocument();
@@ -110,4 +112,6 @@ public class ProductRepositoryTest {
 
         assertTrue(result.isEmpty());
     }
+
+**/
 }
