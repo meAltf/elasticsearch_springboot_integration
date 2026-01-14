@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -84,6 +85,24 @@ public class ProductRepositoryTest {
         assertThat(page.getContent()).hasSize(1);
         assertThat(page.getContent().get(0).getName())
                 .isEqualTo("MacBook Air");
+    }
+
+    @Test
+    void findByNameContainingOrDescriptionContaining_noMatch() {
+        ProductDocument product = new ProductDocument();
+        product.setId("4");
+        product.setName("Tablet");
+        product.setDescription("Android device");
+
+        productRepository.save(product);
+        var pageable = org.springframework.data.domain.PageRequest.of(0, 1, Sort.by("price").ascending()
+        );
+
+        Page<ProductDocument> result =
+                productRepository.findByNameContainingOrDescriptionContaining(
+                        "iPhone", "iPhone", pageable);
+
+        assertTrue(result.isEmpty());
     }
 
 /**
