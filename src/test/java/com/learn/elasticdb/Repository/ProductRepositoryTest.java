@@ -5,7 +5,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.env.Environment;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class ProductRepositoryTest {
 
     /**
@@ -21,14 +27,20 @@ public class ProductRepositoryTest {
      Index mapping, Serialization, ES interaction, Repository wiring
      */
 
-    // Does not use this
-    @BeforeEach
-    void cleanIndex() {
-        productRepository.deleteAll();
-    }
+    @Autowired
+    Environment env;
+
+    @Autowired
+    ElasticsearchOperations operations;
 
     @Autowired
     private ProductRepository productRepository;
+
+    @BeforeEach
+    void verifyProfileAndIndex() {
+        System.out.println("Active profiles: " + Arrays.toString(env.getActiveProfiles()));
+        operations.indexOps(IndexCoordinates.of("products-test")).delete();
+    }
 
     @Test
     void saveAndFindById_shouldWork() {
