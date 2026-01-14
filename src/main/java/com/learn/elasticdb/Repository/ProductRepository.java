@@ -1,6 +1,8 @@
 package com.learn.elasticdb.Repository;
 
 import com.learn.elasticdb.Entity.ProductDocument;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,8 +17,9 @@ public interface ProductRepository extends ElasticsearchRepository<ProductDocume
     Optional<ProductDocument> findById(String name);
 
     // Full-text search on name OR description
-    List<ProductDocument> findByNameContainingOrDescriptionContaining(String name,
-                                                                      String description);
+    Page<ProductDocument> findByNameContainingOrDescriptionContaining(String name,
+                                                                      String description,
+                                                                      Pageable pageable);
     /**
      Spring data converts it into an Elasticsearch match query
      {

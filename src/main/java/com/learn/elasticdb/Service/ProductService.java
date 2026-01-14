@@ -4,6 +4,8 @@ import com.learn.elasticdb.Entity.ProductDocument;
 import com.learn.elasticdb.Repository.ProductRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,8 +39,8 @@ public class ProductService {
                 .orElseThrow(() -> new NoSuchElementException("Product not found with id in index: " + id));
     }
 
-    public List<ProductDocument> searchProduct(String query) {
-        return productRepository.findByNameContainingOrDescriptionContaining(query, query);
+    public Page<ProductDocument> searchProduct(String query, Pageable pageable) {
+        return productRepository.findByNameContainingOrDescriptionContaining(query, query, pageable);
     }
 
     // To test is product repository is able to inject successfully or not

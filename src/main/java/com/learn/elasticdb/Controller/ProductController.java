@@ -3,6 +3,9 @@ package com.learn.elasticdb.Controller;
 import com.learn.elasticdb.Entity.ProductDocument;
 import com.learn.elasticdb.Service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,8 +41,9 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public List<ProductDocument> search(@RequestParam String query) {
-        return productService.searchProduct(query);
+    public Page<ProductDocument> search(@RequestParam String query,
+                                        @PageableDefault(size = 3) Pageable pageable) {
+        return productService.searchProduct(query, pageable);
     }
 
     // To test, is springboot able to map the request or not

@@ -5,6 +5,7 @@ import com.learn.elasticdb.Service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -90,17 +91,29 @@ public class ProductControllerTest {
     }
 
     @Test
-    void searchProduct_shouldReturnProducts() throws Exception {
+    void search_products_with_pagination_and_sorting() throws Exception {
         ProductDocument product = new ProductDocument();
-        product.setName("product");
-        product.setDescription("Description");
+        product.setId("1");
+        product.setName("MacBook Air M1");
+        product.setDescription("Apple laptop");
+        product.setPrice(99999);
 
-        when(productService.searchProduct("product")).thenReturn(List.of(product));
-        mockMvc.perform(get("/products/search")
-                        .param("query", "product"))
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("price").descending());
+        Page<ProductDocument> page =
+                new PageImpl<>(List.of(product), pageable, 1);
+
+
+        when(productService.searchProduct("mac", pageable)).thenReturn(page);
+        mockMvc.perform(
+                        get("/products/search")
+                                .param("query", "mac")
+                                .param("page", "0")
+                                .param("size", "2")
+                                .param("sort", "price,desc")
+                )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].name").value("product"));
+                .andExpect(jsonPath("$.content[0].name").value("MacBook Air M1"))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test

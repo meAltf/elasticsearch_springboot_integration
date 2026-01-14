@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -14,6 +15,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -98,17 +100,21 @@ public class ProductServiceTest {
     }
 
     @Test
-    void searchProduct_shouldReturnProduct() {
+    void search_products_with_pagination() {
+
+        Pageable pageable = PageRequest.of(0, 5, Sort.by("price").ascending());
+
         ProductDocument product = new ProductDocument();
-        product.setName("Iphone");
-        product.setDescription("Apple Mobile");
+        product.setName("MacBook");
 
-        when(productRepository.findByNameContainingOrDescriptionContaining(anyString(), anyString())).thenReturn(
-                List.of(product));
+        Page<ProductDocument> page = new PageImpl<>(List.of(product));
 
-        List<ProductDocument> productDocuments = productService.searchProduct("abc123");
-        assertNotNull(productDocuments);
-        assertEquals("Iphone", product.getName());
-        assertEquals("Apple Mobile", product.getDescription());
+        when(productRepository.findByNameContainingOrDescriptionContaining("mac", "mac", pageable))
+                .thenReturn(page);
+
+        Page<ProductDocument> result = productService.searchProduct("mac", pageable);
+
+        assertEquals(1, result.getTotalElements());
+        verify(productRepository).findByNameContainingOrDescriptionContaining("mac", "mac", pageable);
     }
 }
