@@ -1,6 +1,7 @@
 package com.learn.elasticdb.learnelasticintest.sec01;
 
 import com.learn.elasticdb.learnelasticintest.AbstractTest;
+import com.learn.elasticdb.learnelasticintest.sec01.entity.Review;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -23,6 +24,14 @@ public class IndexOperationTest extends AbstractTest {
 
         Assertions.assertTrue(indexOperations.create());
         this.verify(indexOperations, 1,1);
+    }
+
+    @Test
+    public void createIndexWithSettings(){
+        var indexOperations = this.elasticsearchOperations.indexOps(Review.class);
+
+        Assertions.assertTrue(indexOperations.create());
+        this.verify(indexOperations, 2,2);
     }
 
     private void verify(IndexOperations indexOperations, int expectedShards, int expectedReplicas){
