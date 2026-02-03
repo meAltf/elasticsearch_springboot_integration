@@ -1,6 +1,8 @@
 package com.learn.elasticdb.learnelasticintest.sec01;
 
 import com.learn.elasticdb.learnelasticintest.AbstractTest;
+import com.learn.elasticdb.learnelasticintest.sec01.entity.Customer;
+import com.learn.elasticdb.learnelasticintest.sec01.entity.Movie;
 import com.learn.elasticdb.learnelasticintest.sec01.entity.Review;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -32,6 +34,22 @@ public class IndexOperationTest extends AbstractTest {
 
         Assertions.assertTrue(indexOperations.create());
         this.verify(indexOperations, 2,2);
+    }
+
+    @Test
+    public void createIndexWithSettingsAndMappings(){
+        var indexOperations = this.elasticsearchOperations.indexOps(Customer.class);
+
+        Assertions.assertTrue(indexOperations.createWithMapping());
+        this.verify(indexOperations, 3,0);
+    }
+
+    @Test
+    public void createIndexWithFieldMappings(){
+        var indexOperations = this.elasticsearchOperations.indexOps(Movie.class);
+
+        Assertions.assertTrue(indexOperations.createWithMapping());
+        this.verify(indexOperations, 1,1);
     }
 
     private void verify(IndexOperations indexOperations, int expectedShards, int expectedReplicas){
