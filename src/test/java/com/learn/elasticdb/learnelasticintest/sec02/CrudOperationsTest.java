@@ -46,6 +46,37 @@ public class CrudOperationsTest extends AbstractTest {
 
     }
 
+    @Test
+    public void bulkCrud() {
+
+        var list = IntStream.rangeClosed(1, 10)
+                .mapToObj(i -> this.createEmployee(i, "name-" + i, 30 + i))
+                .toList();
+        this.repository.saveAll(list);
+        this.printAll();
+
+        // check the count
+        Assertions.assertEquals(10, this.repository.count());
+
+        // find by ids
+        var ids = List.of(2, 4, 6);
+        var iterable = this.repository.findAllById(ids);
+        list = Streamable.of(iterable).toList();
+        Assertions.assertEquals(3, list.size());
+
+        // update and save
+        list.forEach(e -> e.setAge(e.getAge() + 10)); // mutable object
+        this.repository.saveAll(list);
+        this.printAll();
+        this.repository.findAllById(ids)
+                .forEach(e -> Assertions.assertEquals(e.getId() + 40, e.getAge()));
+
+        // delete and check the count
+        this.repository.deleteAllById(ids);
+        this.printAll();
+        Assertions.assertEquals(7, this.repository.count());
+
+    }
 
     private Employee createEmployee(int id, String name, int age) {
         var employee = new Employee();
