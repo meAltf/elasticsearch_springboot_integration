@@ -1,0 +1,5 @@
+# Method return type:
+- T : Entities
+- List<T>/Stream<T> : Just the entities
+- SearchHits<T> : Results with scores, aggregations, suggestions etc.
+- SearchPage<T> : Pagination requirements
