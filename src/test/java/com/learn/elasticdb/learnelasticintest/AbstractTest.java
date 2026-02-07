@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ResourceLoader;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.testcontainers.utility.TestcontainersConfiguration;
 import java.util.function.Consumer;
 
@@ -26,17 +26,17 @@ public class AbstractTest {
     @Autowired
     private ResourceLoader resourceLoader;
 
-    protected <T> T readResource(String path, TypeReference<T> typeReference){
-        try{
+    protected <T> T readResource(String path, TypeReference<T> typeReference) {
+        try {
             var classpath = "classpath:" + path;
             var file = this.resourceLoader.getResource(classpath).getFile();
-            return this.mapper.readValue(typeReference, file);
-        }catch (Exception e){
+            return this.mapper.readValue(file, typeReference);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected <T> Consumer<T> print(){
+    protected <T> Consumer<T> print() {
         return t -> log.info("{}", t);
     }
 }
