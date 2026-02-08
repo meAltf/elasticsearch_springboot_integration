@@ -1,5 +1,6 @@
 package com.learn.elasticdb.learnelasticintest.sec05;
 
+import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.learn.elasticdb.learnelasticintest.AbstractTest;
@@ -9,12 +10,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregation;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class NativeAndCriteriaQueryTest extends AbstractTest {
 
@@ -60,6 +63,13 @@ public class NativeAndCriteriaQueryTest extends AbstractTest {
         // We can also do geo point
         // Criteria.where("location").within(point, distance)
 
+    }
+
+    private void verify(Criteria criteria, int expectedResultsCount) {
+        var query = CriteriaQuery.builder(criteria).build();
+        var searchHits = this.elasticsearchOperations.search(query, Garment.class);
+        searchHits.forEach(this.print());
+        Assertions.assertEquals(expectedResultsCount, searchHits.getTotalHits());
     }
 
     /*
@@ -126,10 +136,99 @@ public class NativeAndCriteriaQueryTest extends AbstractTest {
         Assertions.assertEquals(4, searchHits.getTotalHits());
     }
 
-    private void verify(Criteria criteria, int expectedResultsCount) {
-        var query = CriteriaQuery.builder(criteria).build();
-        var searchHits = this.elasticsearchOperations.search(query, Garment.class);
-        searchHits.forEach(this.print());
-        Assertions.assertEquals(expectedResultsCount, searchHits.getTotalHits());
+    /*
+            {
+          "size": 0,
+          "aggs": {
+            "price-stats": {
+              "stats": {
+                "field": "price"
+              }
+            },
+            "group-by-brand": {
+              "terms": {
+                "field": "brand"
+              }
+            },
+            "group-by-color": {
+              "terms": {
+                "field": "color"
+              }
+            },
+            "price-range": {
+              "range": {
+                "field": "price",
+                "ranges": [
+                  {
+                    "to": 50
+                  },
+                  {
+                    "from": 50,
+                    "to": 100
+                  },
+                  {
+                    "from": 100,
+                    "to": 150
+                  },
+                  {
+                    "from": 150
+                  }
+                ]
+              }
+            }
+          }
+        }
+     */
+
+    @Test
+    public void aggregation() {
+        var priceStats = Aggregation.of(builder -> builder.stats(
+                StatsAggregation.of(statBuilder -> statBuilder.field("price"))
+        ));
+
+        var brandTerms = Aggregation.of(builder -> builder.terms(
+                TermsAggregation.of(termBuilder -> termBuilder.field("brand"))
+        ));
+
+        var colorTerms = Aggregation.of(builder -> builder.terms(
+                TermsAggregation.of(termBuilder -> termBuilder.field("color"))
+        ));
+
+        var ranges = List.of(
+                AggregationRange.of(b -> b.to(50d)),
+                AggregationRange.of(b -> b.from(50d).to(100d)),
+                AggregationRange.of(b -> b.from(100d).to(150d)),
+                AggregationRange.of(b -> b.from(150d))
+        );
+        var priceRange = Aggregation.of(b -> b.range(
+                RangeAggregation.of(rb -> rb.field("price").ranges(ranges))
+        ));
+
+        var nativeQuery = NativeQuery.builder()
+                .withMaxResults(0) // size=0
+                .withAggregation("price-stats", priceStats)
+                .withAggregation("group-by-brand", brandTerms)
+                .withAggregation("group-by-color", colorTerms)
+                .withAggregation("price-range", priceRange)
+                .build();
+
+        var searchHits = this.elasticsearchOperations.search(nativeQuery, Garment.class);
+        var aggregations = (List<ElasticsearchAggregation>) searchHits.getAggregations().aggregations();
+
+        var map = aggregations.stream()
+                .map(ElasticsearchAggregation::aggregation)
+                .collect(Collectors.toMap(
+                        a -> a.getName(),
+                        a -> a.getAggregate()
+                ));
+
+        this.print().accept(map);
+        Assertions.assertEquals(4, map.size());
+
+        Assertions.assertTrue(map.get("price-stats").isStats());
+        Assertions.assertTrue(map.get("price-range").isRange());
+        Assertions.assertTrue(map.get("group-by-brand").isSterms());
+        Assertions.assertTrue(map.get("group-by-color").isSterms());
+
     }
 }
