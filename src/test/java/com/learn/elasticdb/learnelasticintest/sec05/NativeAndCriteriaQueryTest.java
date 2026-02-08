@@ -230,5 +230,14 @@ public class NativeAndCriteriaQueryTest extends AbstractTest {
         Assertions.assertTrue(map.get("group-by-brand").isSterms());
         Assertions.assertTrue(map.get("group-by-color").isSterms());
 
+        if (map.get("group-by-brand").isSterms()) {
+            map.get("group-by-brand").sterms()
+                    .buckets()
+                    .array()
+                    .stream()
+                    .map(b -> b.key().stringValue() + ":" + b.docCount())
+                    .forEach(this.print());
+        }
+
     }
 }
