@@ -1,5 +1,6 @@
 package com.learn.elasticdb.learnelasticintest.sec05;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.learn.elasticdb.learnelasticintest.AbstractTest;
 import com.learn.elasticdb.learnelasticintest.sec05.entity.Garment;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
@@ -58,6 +60,70 @@ public class NativeAndCriteriaQueryTest extends AbstractTest {
         // We can also do geo point
         // Criteria.where("location").within(point, distance)
 
+    }
+
+    /*
+
+    {
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "term": {
+            "occasion": "Casual"
+          }
+        },
+        {
+            "range": {
+              "price": {
+                "lte": 50
+              }
+            }
+        }
+      ],
+      "should": [
+        {
+          "term": {
+            "color": "Brown"
+          }
+        }
+      ]
+    }
+  }
+}
+
+     */
+
+    @Test
+    public void boolQuery() {
+        // term query
+        var occasionCasual = Query.of(builder -> builder.term(
+                TermQuery.of(termBuilder -> termBuilder.field("occasion").value("Casual"))
+        ));
+
+        // term query
+        var colorBrown = Query.of(builder -> builder.term(
+                TermQuery.of(termBuilder -> termBuilder.field("color").value("Brown"))
+        ));
+
+        // rangeQuery | should
+        var priceBelow50 = Query.of(builder -> builder.range(
+                RangeQuery.of(rangeBuilder -> rangeBuilder.number(
+                        NumberRangeQuery.of(numRangeBuilder -> numRangeBuilder.field("price").lte(50d))
+                ))
+        ));
+
+        var query = Query.of(builder -> builder.bool(
+                BoolQuery.of(boolBuilder -> boolBuilder.filter(occasionCasual, priceBelow50).should(colorBrown))
+        ));
+
+        var nativeQuery = NativeQuery.builder()
+                .withQuery(query)
+                .build();
+
+        var searchHits = this.elasticsearchOperations.search(nativeQuery, Garment.class);
+        searchHits.forEach(this.print());
+        Assertions.assertEquals(4, searchHits.getTotalHits());
     }
 
     private void verify(Criteria criteria, int expectedResultsCount) {
